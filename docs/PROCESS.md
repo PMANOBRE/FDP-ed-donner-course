@@ -1,6 +1,7 @@
 # Process
 
-`uv sync` and `npm install` at the repo root install everything, including a git pre-commit hook. `npm run dev` starts the backend and the dashboard.
+`uv sync` and `npm install` at the repo root install everything, including a git pre-commit hook. 
+`npm run dev` starts the backend and the dashboard.
 
 `npm run check` runs every check:
 
@@ -12,7 +13,7 @@ The pre-commit hook runs the format, lint, type and unit test checks on every co
 
 ## Planning
 
-When asked to plan, as in "Please plan the pilot", write the plan to `docs/PLAN.md` and write no code.
+When asked to plan, as in "plan the pilot", write the plan to `docs/PLAN.md` and write no code.
 
 - Split the work into phases, usually 5 or 6, each building on the last.
 - Give each phase detailed success criteria that you can verify yourself: tests that pass, commands and their output, API calls and their responses, and pages you check in the browser with the Playwright MCP server. Write each one as a checkbox.
@@ -20,7 +21,7 @@ When asked to plan, as in "Please plan the pilot", write the plan to `docs/PLAN.
 
 ## Implementing
 
-When asked to implement the plan, as in "Please implement the plan for the pilot", build every phase in order without stopping. For each phase:
+When asked to implement the plan, as in "implement the plan for the pilot", build every phase in order without stopping. For each phase:
 
 1. Build it, with tests.
 2. Check every success criterion and fix whatever fails.
