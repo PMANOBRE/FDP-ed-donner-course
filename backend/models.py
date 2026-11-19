@@ -157,6 +157,12 @@ class Handler(BaseModel):
     can_approve_over_limit: bool
 
 
+class Instructions(BaseModel):
+    """The agent's instructions followed by the policy wording, in Markdown."""
+
+    text: str
+
+
 class StartClaim(BaseModel):
     """The thread the agent works a claim in."""
 

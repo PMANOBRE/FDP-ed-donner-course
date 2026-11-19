@@ -5,6 +5,7 @@ import sqlite3
 from collections.abc import AsyncIterator, Iterator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Annotated, Any
 
 from fastapi import Depends, FastAPI, HTTPException
@@ -16,6 +17,7 @@ from backend.models import (
     ClaimOutcome,
     ClaimSummary,
     Handler,
+    Instructions,
     NewDecision,
     NewPayment,
     NewSignOff,
@@ -25,6 +27,8 @@ from backend.models import (
     Step,
 )
 from backend.seed import seed
+
+INSTRUCTIONS = Path(__file__).parent / "instructions.md"
 
 
 @asynccontextmanager
@@ -61,12 +65,14 @@ def money(amount: float) -> str:
     return f"${amount:,.2f}"
 
 
+def setting(db: sqlite3.Connection, key: str) -> str:
+    """Read one setting."""
+    return db.execute("SELECT value FROM settings WHERE key = ?", (key,)).fetchone()[0]
+
+
 def approval_limit(db: sqlite3.Connection) -> float:
     """The payout above which a handler must sign off."""
-    row = db.execute(
-        "SELECT value FROM settings WHERE key = 'payout_approval_limit'"
-    ).fetchone()
-    return float(row["value"])
+    return float(setting(db, "payout_approval_limit"))
 
 
 def find(db: sqlite3.Connection, sql: str, key: str, what: str) -> sqlite3.Row:
@@ -176,6 +182,14 @@ def get_claim_history(customer_id: str, db: DB) -> ClaimHistory:
         customer_since=row["customer_since"],
         previous_claims=json.loads(row["previous_claims"]),
     )
+
+
+@app.get("/api/instructions", operation_id="get_instructions")
+def get_instructions(db: DB) -> Instructions:
+    """Get the agent's instructions, followed by the policy wording."""
+    instructions = INSTRUCTIONS.read_text(encoding="utf-8")
+    instructions = instructions.replace("{limit}", money(approval_limit(db)))
+    return Instructions(text=f"{instructions}\n{setting(db, 'policy_wording')}")
 
 
 @app.get("/api/handlers", operation_id="list_handlers")
