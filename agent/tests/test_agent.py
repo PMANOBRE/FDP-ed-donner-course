@@ -173,7 +173,7 @@ def test_run_records_the_model_text_beside_its_tool_calls(api):
 def test_command_line_works_one_claim_in_a_new_thread(monkeypatch, capsys):
     threads = []
     monkeypatch.setattr(
-        cli, "run", lambda claim_id, thread_id: threads.append(thread_id) or "Reply."
+        main, "run", lambda claim_id, thread_id: threads.append(thread_id) or "Reply."
     )
     cli.main(["CLM-1001"])
     cli.main(["CLM-1001"])
@@ -187,5 +187,6 @@ def test_model_name(monkeypatch):
     monkeypatch.delenv("MODEL_NAME", raising=False)
     assert main.model().model_name == "openai/gpt-6-luna"
     assert main.model().reasoning_effort == "low"
+    assert main.model().max_retries == main.MAX_RETRIES
     monkeypatch.setenv("MODEL_NAME", "openrouter/free")
     assert main.model().model_name == "openrouter/free"

@@ -1,15 +1,20 @@
-"""Work one claim from the command line: uv run -m agent CLM-1001."""
+"""Work claims from the command line.
+
+uv run -m agent CLM-1001 works one claim; uv run -m agent works every waiting claim.
+"""
 
 import sys
-from uuid import uuid4
 
-from agent.main import run
+from agent import main as agent
 
 
 def main(args: list[str]) -> None:
-    """Work the claim named in the arguments, in a new thread, and print the reply."""
-    claim_id = args[0]
-    print(run(claim_id, f"{claim_id}-{uuid4().hex[:8]}"))
+    """Work the claim named in the arguments, or else the whole queue."""
+    if args:
+        claim_id = args[0]
+        print(agent.run(claim_id, agent.new_thread_id(claim_id)))
+    else:
+        agent.work_queue()
 
 
 if __name__ == "__main__":

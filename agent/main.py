@@ -2,8 +2,11 @@
 
 import json
 import os
+import textwrap
+from collections import Counter
 from collections.abc import Iterable, Iterator
 from typing import Any, Literal
+from uuid import uuid4
 
 import httpx
 from dotenv import load_dotenv
@@ -20,6 +23,9 @@ load_dotenv(override=True)
 BACKEND_URL = "http://localhost:8000"
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 DEFAULT_MODEL = "openai/gpt-6-luna"
+# OpenRouter allows new accounts and free models 20 requests a minute. With this
+# many retries, the client's backoff waits out a full minute before giving up.
+MAX_RETRIES = 15
 CHECKPOINTER = InMemorySaver()
 
 
@@ -101,6 +107,7 @@ def model() -> ChatOpenAI:
         base_url=OPENROUTER_BASE_URL,
         api_key=SecretStr(os.environ["OPENROUTER_API_KEY"]),
         reasoning_effort=None if name else "low",
+        max_retries=MAX_RETRIES,
     )
 
 
@@ -152,3 +159,42 @@ def run(claim_id: str, thread_id: str, llm: BaseChatModel | None = None) -> str:
             if isinstance(message, AIMessage) and message.text:
                 reply = message.text
     return reply
+
+
+def new_thread_id(claim_id: str) -> str:
+    """A new thread for one run on a claim."""
+    return f"{claim_id}-{uuid4().hex[:8]}"
+
+
+def outcome(claim_id: str) -> tuple[str, str]:
+    """The decision recorded on a claim, and a line that reports it."""
+    with backend() as client:
+        claim = client.get(f"/api/claims/{claim_id}").raise_for_status().json()
+    decision = claim["decision"]
+    if decision is None:
+        return "undecided", f"{claim_id}  undecided"
+    kind = decision["decision"]
+    return kind, f"{claim_id}  {kind:<7}  ${decision['payout']:,.2f}"
+
+
+def work_queue() -> Counter[str]:
+    """Work every waiting claim in queue order, then count the decisions."""
+    with backend() as client:
+        claims = client.get("/api/claims").raise_for_status().json()
+    counts: Counter[str] = Counter()
+    for claim in claims:
+        if claim["status"] != "waiting":
+            continue
+        claim_id = claim["claim_id"]
+        try:
+            run(claim_id, new_thread_id(claim_id))
+            kind, line = outcome(claim_id)
+        except Exception as error:
+            reason = textwrap.shorten(str(error), 120)
+            kind, line = "error", f"{claim_id}  error    {reason}"
+        counts[kind] += 1
+        print(line, flush=True)
+    kinds = ["approve", "decline", "refer"]
+    kinds += [kind for kind in ("undecided", "error") if counts[kind]]
+    print(", ".join(f"{kind} {counts[kind]}" for kind in kinds))
+    return counts

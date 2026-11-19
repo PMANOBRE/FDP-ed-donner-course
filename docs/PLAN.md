@@ -167,15 +167,15 @@ Add the agent's steps to the claim page, the decision panel with payment status,
 
 Make `uv run -m agent` work every waiting claim in queue order. It prints one line per claim, then a count of each decision. If one claim fails, it reports the error and moves on. Update `docs/STATUS.md` to describe the pilot and how to run it.
 
-- [ ] Stub model test: the queue run works each waiting claim once, skips claims that aren't waiting, and prints one line per claim, like `CLM-1001  approve  $420.00`
-- [ ] Stub model test: a claim whose run raises an error is reported and the next claim is still worked
-- [ ] Live: on a fresh database with `npm run dev` running, `uv run -m agent` works all 25 claims and prints 25 lines and the counts
-- [ ] Live: afterwards, `curl -s localhost:8000/api/claims` shows no claim `waiting` or `in_progress`
-- [ ] Live: every decision has a section and a reason of two or three sentences
-- [ ] Live: every approval over $1,000 is `waiting_for_sign_off` with no payment, every other approval is paid exactly its payout, and declines and referrals have a payout of 0 and no payment
-- [ ] Live, in the browser: the queue shows the counts by state after the run. Signing off one held claim as Priya Raman moves it to Decided and paid
-- [ ] `docs/STATUS.md` describes what's built, how to seed, run and work the queue, and the decision counts from the live run
-- [ ] `npm run check` passes
+- [x] Stub model test: the queue run works each waiting claim once, skips claims that aren't waiting, and prints one line per claim, like `CLM-1001  approve  $420.00`
+- [x] Stub model test: a claim whose run raises an error is reported and the next claim is still worked
+- [x] Live: on a fresh database with `npm run dev` running, `uv run -m agent` works all 25 claims and prints 25 lines and the counts
+- [x] Live: afterwards, `curl -s localhost:8000/api/claims` shows no claim `waiting` or `in_progress`
+- [x] Live: every decision has a section and a reason of two or three sentences
+- [x] Live: every approval over $1,000 is `waiting_for_sign_off` with no payment, every other approval is paid exactly its payout, and declines and referrals have a payout of 0 and no payment
+- [x] Live, in the browser: the queue shows the counts by state after the run. Signing off one held claim as Priya Raman moves it to Decided and paid
+- [x] `docs/STATUS.md` describes what's built, how to seed, run and work the queue, and the decision counts from the live run
+- [x] `npm run check` passes
 
 ## Not in this plan
 
