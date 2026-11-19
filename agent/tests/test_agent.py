@@ -1,9 +1,8 @@
-from fastapi.testclient import TestClient
+import pytest
 from langchain_core.language_models.fake_chat_models import GenericFakeChatModel
 from langchain_core.messages import AIMessage
 
 from agent import main
-from backend.main import app
 
 
 class StubModel(GenericFakeChatModel):
@@ -13,13 +12,13 @@ class StubModel(GenericFakeChatModel):
         return self
 
 
-def test_check_backend(monkeypatch):
-    monkeypatch.setattr(main, "backend", lambda: TestClient(app))
+@pytest.mark.usefixtures("api")
+def test_check_backend():
     assert main.check_backend.invoke({}) == "ok"
 
 
-def test_run(monkeypatch):
-    monkeypatch.setattr(main, "backend", lambda: TestClient(app))
+@pytest.mark.usefixtures("api")
+def test_run():
     replies = [
         AIMessage(
             content="", tool_calls=[{"name": "check_backend", "args": {}, "id": "1"}]
