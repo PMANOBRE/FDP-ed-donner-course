@@ -8,6 +8,7 @@ The claims pilot from `docs/PLAN.md` is being built, phase by phase.
 - Phase 2: deciding, paying and signing off, with the $1,000 sign-off rule enforced in the payment operation.
 - Phase 3: the UnderCover Agent, which decides one claim and records each step as it works.
 - Phase 4: the dashboard's queue, claim and instructions pages, in the brand.
+- Phase 5: the agent's steps, the decision with its payment, and the sign-off form on the claim page, all refreshing every two seconds.
 
 ## The backend
 
@@ -24,6 +25,7 @@ The claims pilot from `docs/PLAN.md` is being built, phase by phase.
 ## The dashboard
 
 - React and Vite at `http://localhost:5173`, with hash routes: the queue (`#/`), a claim (`#/claims/CLM-1001`) and the agent's instructions (`#/instructions`, read only).
+- The queue and the claim page refresh every two seconds, so a page opened before the agent starts shows its steps as they arrive. A claim's page shows the decision, its payment, and a sign-off form when a payout waits for a handler.
 - `dashboard/src/api.ts` is the typed client, `format.ts` the formatting helpers, and `styles.css` the brand: Instrument Sans, Instrument Serif for the tagline, JetBrains Mono for ids and amounts, light and dark mode from the system setting.
 
 ## End-to-end tests

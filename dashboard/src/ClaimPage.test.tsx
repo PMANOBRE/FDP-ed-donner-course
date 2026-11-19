@@ -1,7 +1,16 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
-import { afterEach, expect, it, vi } from "vitest";
+import { act, cleanup, render, screen, within } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { Claim, Step } from "./api";
 import { ClaimPage } from "./ClaimPage";
-import { claim, claimRoutes, history, policy, stubFetch } from "./testing";
+import { REFRESH_MS } from "./useData";
+import {
+  claim,
+  claimRoutes,
+  history,
+  json,
+  policy,
+  stubFetch,
+} from "./testing";
 
 afterEach(() => {
   cleanup();
@@ -88,4 +97,80 @@ it("says when the claim doesn't exist", async () => {
   expect(
     await screen.findByRole("heading", { name: "Claim not found" }),
   ).toBeDefined();
+});
+
+describe("refreshing", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("shows the agent's work as it happens, without a reload", async () => {
+    let current: Claim = { ...claim, status: "in_progress", thread_id: "t-1" };
+    let currentSteps: Step[] = [];
+    stubFetch({
+      ...claimRoutes(claim),
+      "/api/claims/CLM-1002": () => json(current),
+      "/api/claims/CLM-1002/steps": () => json(currentSteps),
+    });
+    render(<ClaimPage claimId="CLM-1002" />);
+    expect(await screen.findByText("In progress")).toBeDefined();
+    expect(screen.getByText("Starting work…")).toBeDefined();
+
+    currentSteps = [
+      {
+        step_id: 1,
+        kind: "tool_call",
+        content: 'get_claim {"claim_id": "CLM-1002"}',
+        created_at: "2026-11-19T10:00:00Z",
+      },
+    ];
+    await act(() => vi.advanceTimersByTimeAsync(REFRESH_MS));
+    expect(screen.getByText("get_claim")).toBeDefined();
+
+    current = {
+      ...current,
+      status: "decided",
+      decision: {
+        decision: "approve",
+        payout: 750,
+        section: "5. Baggage and Personal Effects",
+        reason: "Covered after the carrier's payment.",
+        decided_at: "2026-11-19T10:00:10Z",
+      },
+      payment: { amount: 750, paid_at: "2026-11-19T10:00:11Z" },
+    };
+    await act(() => vi.advanceTimersByTimeAsync(REFRESH_MS));
+    expect(screen.getByText("Decided", { selector: ".badge" })).toBeDefined();
+    expect(screen.getByText("Approved")).toBeDefined();
+    expect(screen.getByText("Paid $750.00")).toBeDefined();
+  });
+
+  it("stops refreshing a claim that doesn't exist", async () => {
+    const fetch = stubFetch({});
+    render(<ClaimPage claimId="CLM-9999" />);
+    await screen.findByRole("heading", { name: "Claim not found" });
+    const calls = fetch.mock.calls.length;
+    await act(() => vi.advanceTimersByTimeAsync(REFRESH_MS * 3));
+    expect(fetch.mock.calls).toHaveLength(calls);
+  });
+
+  it("keeps trying after an error", async () => {
+    let fail = true;
+    stubFetch({
+      ...claimRoutes(claim),
+      "/api/claims/CLM-1002": () =>
+        fail ? json({ detail: "Database is locked" }, 500) : json(claim),
+    });
+    render(<ClaimPage claimId="CLM-1002" />);
+    expect((await screen.findByRole("alert")).textContent).toContain(
+      "Database is locked",
+    );
+    fail = false;
+    await act(() => vi.advanceTimersByTimeAsync(REFRESH_MS));
+    expect(screen.getByRole("heading", { name: "CLM-1002" })).toBeDefined();
+  });
 });

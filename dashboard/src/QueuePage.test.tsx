@@ -1,6 +1,7 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { act, cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { QueuePage } from "./QueuePage";
+import { REFRESH_MS } from "./useData";
 import { json, stubFetch, summary } from "./testing";
 
 afterEach(() => {
@@ -60,4 +61,19 @@ it("says when the backend can't be reached", async () => {
   expect((await screen.findByRole("alert")).textContent).toContain(
     "Database is locked",
   );
+});
+
+it("refreshes every two seconds", async () => {
+  vi.useFakeTimers({ shouldAdvanceTime: true });
+  let current = [summary];
+  stubFetch({ "/api/claims": () => json(current) });
+  render(<QueuePage />);
+  const row = (await screen.findAllByRole("row"))[1];
+  expect(within(row).getByText("Waiting")).toBeDefined();
+  current = [{ ...summary, status: "in_progress" }];
+  await act(() => vi.advanceTimersByTimeAsync(REFRESH_MS));
+  expect(
+    within(screen.getAllByRole("row")[1]).getByText("In progress"),
+  ).toBeDefined();
+  vi.useRealTimers();
 });

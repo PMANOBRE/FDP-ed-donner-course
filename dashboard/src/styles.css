@@ -343,6 +343,115 @@ tfoot td {
   font-size: 0.88em;
 }
 
+.decision-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.payout {
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.payment {
+  margin: 16px 0 0;
+  font-weight: 600;
+}
+
+.sign-off {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--inset);
+}
+
+.claim-main .sign-off p {
+  margin: 0 0 12px;
+}
+
+.sign-off-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+select,
+button {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 10px;
+  font: inherit;
+}
+
+select {
+  background: var(--panel);
+  color: var(--ink);
+}
+
+button {
+  font-weight: 600;
+  background: var(--sea-green);
+  color: var(--midnight);
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.claim-main .error {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--raspberry);
+  color: #ffffff;
+}
+
+.steps {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--inset);
+  font-size: 0.9rem;
+}
+
+.step-time {
+  float: right;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.step-label {
+  font-weight: 600;
+}
+
+.step-message {
+  margin: 4px 0 0;
+}
+
+.step pre {
+  margin: 6px 0 0;
+  font-size: 0.78rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.step summary {
+  font-weight: 600;
+  cursor: pointer;
+}
+
 @media (max-width: 900px) {
   .claim {
     grid-template-columns: minmax(0, 1fr);

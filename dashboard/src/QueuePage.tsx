@@ -22,7 +22,7 @@ function Counts({ claims }: Readonly<{ claims: ClaimSummary[] }>) {
 }
 
 export function QueuePage() {
-  const claims = useData("queue", listClaims);
+  const claims = useData("queue", listClaims, true);
   if (claims.state !== "ready") {
     return <Pending loaded={claims} missing="Queue not found" />;
   }

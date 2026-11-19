@@ -2,14 +2,25 @@ import {
   getClaim,
   getClaimHistory,
   getPolicy,
+  listSteps,
   type Claim,
   type ClaimHistory,
   type Policy,
 } from "./api";
 import { StatusBadge } from "./Badges";
+import { DecisionPanel } from "./DecisionPanel";
 import { date, money, words } from "./format";
 import { Pending } from "./Pending";
+import { Steps } from "./Steps";
 import { useData } from "./useData";
+
+async function loadClaim(claimId: string) {
+  const [claim, steps] = await Promise.all([
+    getClaim(claimId),
+    listSteps(claimId),
+  ]);
+  return { claim, steps };
+}
 
 function Items({ claim }: Readonly<{ claim: Claim }>) {
   const total = claim.items.reduce((sum, item) => sum + item.amount, 0);
@@ -136,11 +147,11 @@ function HistoryPanel({ customerId }: Readonly<{ customerId: string }>) {
 }
 
 export function ClaimPage({ claimId }: Readonly<{ claimId: string }>) {
-  const loaded = useData(claimId, getClaim);
+  const loaded = useData(claimId, loadClaim, true);
   if (loaded.state !== "ready") {
     return <Pending loaded={loaded} missing="Claim not found" />;
   }
-  const claim = loaded.data;
+  const { claim, steps } = loaded.data;
   return (
     <>
       <div className="title">
@@ -152,6 +163,7 @@ export function ClaimPage({ claimId }: Readonly<{ claimId: string }>) {
       </p>
       <div className="claim">
         <div className="claim-main">
+          <DecisionPanel claim={claim} onSignedOff={loaded.reload} />
           <section className="panel">
             <h2>Story</h2>
             <p>{claim.story}</p>
@@ -172,6 +184,7 @@ export function ClaimPage({ claimId }: Readonly<{ claimId: string }>) {
         <aside className="claim-side">
           <PolicyPanel policyId={claim.policy_id} />
           <HistoryPanel customerId={claim.customer_id} />
+          <Steps steps={steps} working={claim.status === "in_progress"} />
         </aside>
       </div>
     </>

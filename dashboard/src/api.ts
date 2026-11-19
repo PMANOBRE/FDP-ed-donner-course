@@ -130,7 +130,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   if (!response.ok) {
     const body = (await response.json()) as { detail?: unknown };
     const detail = typeof body.detail === "string" ? body.detail : "";
-    throw new ApiError(response.status, detail || response.statusText);
+    const fallback = `The request failed with status ${String(response.status)}`;
+    throw new ApiError(response.status, detail || fallback);
   }
   return (await response.json()) as T;
 }
@@ -143,3 +144,12 @@ export const getPolicy = (policyId: string) =>
 export const getClaimHistory = (customerId: string) =>
   request<ClaimHistory>(`/customers/${customerId}/claims`);
 export const getInstructions = () => request<{ text: string }>("/instructions");
+export const listSteps = (claimId: string) =>
+  request<Step[]>(`/claims/${claimId}/steps`);
+export const listHandlers = () => request<Handler[]>("/handlers");
+export const signOff = (claimId: string, handlerId: string) =>
+  request<Claim>(`/claims/${claimId}/sign-off`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ handler_id: handlerId }),
+  });

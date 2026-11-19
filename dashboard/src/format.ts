@@ -9,6 +9,10 @@ const day = new Intl.DateTimeFormat("en-US", {
   timeZone: "UTC",
 });
 const clock = new Intl.DateTimeFormat("en-US", { timeStyle: "medium" });
+const moment = new Intl.DateTimeFormat("en-US", {
+  dateStyle: "medium",
+  timeStyle: "short",
+});
 
 /** An amount in US dollars, such as $1,250.00. */
 export const money = (amount: number) => dollars.format(amount);
@@ -18,6 +22,9 @@ export const date = (iso: string) => day.format(new Date(iso));
 
 /** The local time of a timestamp. */
 export const time = (iso: string) => clock.format(new Date(iso));
+
+/** The local date and time of a timestamp. */
+export const when = (iso: string) => moment.format(new Date(iso));
 
 /** A code such as trip_delay, as Trip delay. */
 export const words = (code: string) =>
