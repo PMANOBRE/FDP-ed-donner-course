@@ -7,6 +7,7 @@ The claims pilot from `docs/PLAN.md` is being built, phase by phase.
 - Phase 1: the database, the seed, the read API and the e2e servers.
 - Phase 2: deciding, paying and signing off, with the $1,000 sign-off rule enforced in the payment operation.
 - Phase 3: the UnderCover Agent, which decides one claim and records each step as it works.
+- Phase 4: the dashboard's queue, claim and instructions pages, in the brand.
 
 ## The backend
 
@@ -20,9 +21,13 @@ The claims pilot from `docs/PLAN.md` is being built, phase by phase.
 - Its tools are `get_claim`, `get_policy`, `get_claim_history`, `record_decision` and `pay_claim`, each a thin wrapper over the backend operation of the same name. A refused request goes back to the model as the backend's error.
 - `uv run -m agent CLM-1001` works one claim against the backend on port 8000 and prints the agent's reply. It uses `openai/gpt-6-luna` at low reasoning effort, or `MODEL_NAME`.
 
-## The rest
+## The dashboard
 
-- `dashboard/`: still one page that shows whether the backend is up.
+- React and Vite at `http://localhost:5173`, with hash routes: the queue (`#/`), a claim (`#/claims/CLM-1001`) and the agent's instructions (`#/instructions`, read only).
+- `dashboard/src/api.ts` is the typed client, `format.ts` the formatting helpers, and `styles.css` the brand: Instrument Sans, Instrument Serif for the tagline, JetBrains Mono for ids and amounts, light and dark mode from the system setting.
+
+## End-to-end tests
+
 - `e2e/`: Playwright starts its own backend on port 8001, on a fresh `e2e/undercover.db`, and its own dashboard on port 5174, so `npm run e2e` works while `npm run dev` is running.
 
 ## Running it
