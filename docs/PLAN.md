@@ -103,21 +103,21 @@ Build the database, the seed, and `list_claims`, `get_claim`, `get_policy` and `
 
 Add `start_claim`, `record_step`, `list_steps`, `record_decision`, `pay_claim`, `list_handlers` and `sign_off_claim` with the rules above. `get_claim` now includes the thread id, decision, payment and sign-off.
 
-- [ ] pytest covers every rule in the design, including each 403, 404, 409 and 422
-- [ ] `start_claim` on `CLM-1001` returns `in_progress` with the thread id. After a decision, `start_claim` returns 409
-- [ ] `record_decision` on a waiting claim returns 409
-- [ ] `record_step` twice, then `list_steps`, returns both steps in order with times
-- [ ] An approval with payout 0, a decline with payout 50, a decision of `maybe` and an empty section each return 422
-- [ ] Approving `CLM-1001` for 420.00 gives `decided`. `pay_claim` with 420.00 returns 200 and `get_claim` shows the payment. Paying again returns 409
-- [ ] `pay_claim` with an amount other than the approved payout returns 422 and records nothing
-- [ ] An approval of exactly 1,000.00 gives `decided` and is paid without sign-off
-- [ ] With curl: an approval of 1,350.00 gives `waiting_for_sign_off`. `pay_claim` with 1,350.00 returns 403 with "A payout over $1,000.00 needs a handler's sign-off", and `get_claim` shows no payment
-- [ ] `sign_off_claim` with `HND-99` returns 404, by a handler who can't approve over the limit returns 403 (tested with a modified handler), and on a claim not waiting for sign-off returns 409. With `HND-01` it returns `decided` and a payment of 1,350.00 signed off by Dana Whitfield, and `pay_claim` afterwards returns 409
-- [ ] Declined and referred claims are `decided`, and `pay_claim` on them returns 409
-- [ ] `curl -s localhost:8000/api/handlers` returns the 3 handlers
-- [ ] `grep -rn 1000 backend --include=*.py` finds nothing outside `backend/tests/`
-- [ ] The OpenAPI test from phase 1 passes with the new operations
-- [ ] `npm run check` passes
+- [x] pytest covers every rule in the design, including each 403, 404, 409 and 422
+- [x] `start_claim` on `CLM-1001` returns `in_progress` with the thread id. After a decision, `start_claim` returns 409
+- [x] `record_decision` on a waiting claim returns 409
+- [x] `record_step` twice, then `list_steps`, returns both steps in order with times
+- [x] An approval with payout 0, a decline with payout 50, a decision of `maybe` and an empty section each return 422
+- [x] Approving `CLM-1001` for 420.00 gives `decided`. `pay_claim` with 420.00 returns 200 and `get_claim` shows the payment. Paying again returns 409
+- [x] `pay_claim` with an amount other than the approved payout returns 422 and records nothing
+- [x] An approval of exactly 1,000.00 gives `decided` and is paid without sign-off
+- [x] With curl: an approval of 1,350.00 gives `waiting_for_sign_off`. `pay_claim` with 1,350.00 returns 403 with "A payout over $1,000.00 needs a handler's sign-off", and `get_claim` shows no payment
+- [x] `sign_off_claim` with `HND-99` returns 404, by a handler who can't approve over the limit returns 403 (tested with a modified handler), and on a claim not waiting for sign-off returns 409. With `HND-01` it returns `decided` and a payment of 1,350.00 signed off by Dana Whitfield, and `pay_claim` afterwards returns 409
+- [x] Declined and referred claims are `decided`, and `pay_claim` on them returns 409
+- [x] `curl -s localhost:8000/api/handlers` returns the 3 handlers
+- [x] `grep -rn 1000 backend --include=*.py` finds nothing outside `backend/tests/`
+- [x] The OpenAPI test from phase 1 passes with the new operations
+- [x] `npm run check` passes
 
 ## Phase 3: The UnderCover Agent
 

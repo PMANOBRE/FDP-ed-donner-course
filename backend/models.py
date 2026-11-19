@@ -1,12 +1,14 @@
 """The shapes of the UnderCover API."""
 
-from datetime import date
-from typing import Literal
+from datetime import date, datetime
+from typing import Annotated, Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, StringConstraints
 
 Status = Literal["waiting", "in_progress", "waiting_for_sign_off", "decided"]
 DecisionKind = Literal["approve", "decline", "refer"]
+StepKind = Literal["tool_call", "tool_result", "message"]
+Text = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
 
 class ClaimSummary(BaseModel):
@@ -39,11 +41,45 @@ class Document(BaseModel):
     content: str
 
 
-class Claim(BaseModel):
-    """A claim in full."""
+class Decision(BaseModel):
+    """The decision on a claim."""
+
+    decision: DecisionKind
+    payout: float
+    section: str
+    reason: str
+    decided_at: datetime
+
+
+class Payment(BaseModel):
+    """A payment made on a claim."""
+
+    amount: float
+    paid_at: datetime
+
+
+class SignOff(BaseModel):
+    """A handler's sign-off on a payout over the approval limit."""
+
+    handler_id: str
+    handler_name: str
+    signed_off_at: datetime
+
+
+class ClaimOutcome(BaseModel):
+    """Where a claim stands: its status, decision, payment and sign-off."""
 
     claim_id: str
     status: Status
+    thread_id: str | None
+    decision: Decision | None
+    payment: Payment | None
+    sign_off: SignOff | None
+
+
+class Claim(ClaimOutcome):
+    """A claim in full, with where it stands."""
+
     policy_id: str
     customer_id: str
     customer_name: str
@@ -101,3 +137,55 @@ class ClaimHistory(BaseModel):
     name: str
     customer_since: date
     previous_claims: list[EarlierClaim]
+
+
+class Step(BaseModel):
+    """One step of the agent's work on a claim."""
+
+    step_id: int
+    kind: StepKind
+    content: str
+    created_at: datetime
+
+
+class Handler(BaseModel):
+    """A claims handler."""
+
+    handler_id: str
+    name: str
+    role: str
+    can_approve_over_limit: bool
+
+
+class StartClaim(BaseModel):
+    """The thread the agent works a claim in."""
+
+    thread_id: Text
+
+
+class NewStep(BaseModel):
+    """A step to record."""
+
+    kind: StepKind
+    content: str
+
+
+class NewDecision(BaseModel):
+    """A decision to record."""
+
+    decision: DecisionKind
+    payout: float
+    section: Text
+    reason: Text
+
+
+class NewPayment(BaseModel):
+    """A payment to make."""
+
+    amount: float
+
+
+class NewSignOff(BaseModel):
+    """The handler who signs off."""
+
+    handler_id: Text
