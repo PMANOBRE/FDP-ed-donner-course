@@ -30,11 +30,11 @@ npm install
 ```
 git add -A
 git commit -m "Week 1 Day 4 lab"
-git tag week1day4-done
+git tag -a week1day4-done -m "End of Week 1 Day 4"
 git push --follow-tags
 ```
 
-Name the commit and the tag for the day.
+Name the commit and the tag for the day. The tag needs `-a`, since `--follow-tags` pushes only annotated tags.
 
 ## Why my work is safe
 
